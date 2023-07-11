@@ -75,14 +75,17 @@ def win_probability(left: Skill, right: Skill) -> tuple[list[float], list[float]
     res = get_result_matrix(left, right)
     return list(res.T[0]), list(res[0])
 
-
+def last_avg_power(skill: Skill, prob: list[float]) -> float:
+    return sum((skill.base_coin + i * skill.coin_val * skill.head_prob) * p for i, p in enumerate(prob)) 
 
 def skill_column(number:int):
  return [[sg.Text(f"캐릭터 {number}", size=10)],
-         [sg.Text("스킬 위력", size=10), sg.Input(key=f"base{number}", size=5)],
-         [sg.Text("코인 갯수", size=10), sg.Input(key=f"count{number}", size=5)],
-         [sg.Text("코인 위력", size=10), sg.Input(key=f"coin{number}", size=5)],
-         [sg.Text("정신력", size=10), sg.Input(key=f"sanity{number}", size=5)]]
+         [sg.Text("스킬 위력", size=10), sg.Input(key=f"base{number}", size=7)],
+         [sg.Text("코인 갯수", size=10), sg.Input(key=f"count{number}", size=7)],
+         [sg.Text("코인 위력", size=10), sg.Input(key=f"coin{number}", size=7)],
+         [sg.Text("정신력", size=10), sg.Input(key=f"sanity{number}", size=7)],
+         [sg.Text("승률:", size=10), sg.Text("", key=f"winrate{number}", size=7)],
+         [sg.Text("위력 기댓값:", size=10), sg.Text("", key=f"avgpower{number}", size=7)]]
 
 def detail_column(number: int, res: list[float]):
     res_col = [[sg.Text(f"캐릭터 {number}")]]
@@ -92,7 +95,6 @@ def detail_column(number: int, res: list[float]):
 
 sg.change_look_and_feel('SystemDefaultForReal')
 layout = [[sg.Column(skill_column(1)), sg.Column(skill_column(2))],
-          [sg.Text("계산 결과", key="res")],
           [sg.Button("계산", key="calc"), sg.Button("상세 정보", key="detail")]]
 window = sg.Window("림버스 합 승률 계산기", layout)
                    
@@ -109,11 +111,14 @@ while True:
             sg.popup("숫자를 입력해주세요.")
             continue
         a_win, b_win = win_probability(skill_a, skill_b)
-        window["res"].update(f"캐릭터 1 승률: {sum(a_win) * 100:.3f}%")
+        window["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
+        window["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
+        window["avgpower1"].update(f"{last_avg_power(skill_a, a_win):.3f}")
+        window["avgpower2"].update(f"{last_avg_power(skill_b, b_win):.3f}")
         if event == "detail":
             new_window = sg.Window("상세정보", 
                                    [
-                                       [sg.Column(detail_column(1, a_win)), sg.Column(detail_column(2, b_win))],
+                                       [sg.Column([[sg.Column(detail_column(1, a_win)), sg.Column(detail_column(2, b_win))]], scrollable=True, vertical_scroll_only=True)],
                                        [sg.Exit('확인')]
                                    ])
             new_window.read()
