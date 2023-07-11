@@ -114,4 +114,4 @@ dmypy.json
 .pyre/
 
 # Built exe program
-.exe
+*.exe
