@@ -118,7 +118,7 @@ while True:
         if event == "detail":
             new_window = sg.Window("상세정보", 
                                    [
-                                       [sg.Column([[sg.Column(detail_column(1, a_win)), sg.Column(detail_column(2, b_win))]], scrollable=True, vertical_scroll_only=True)],
+                                       [sg.Column([[sg.Column(detail_column(1, a_win)), sg.Column(detail_column(2, b_win))]], size=(None, 200), scrollable=True, vertical_scroll_only=True)],
                                        [sg.Exit('확인')]
                                    ])
             new_window.read()
