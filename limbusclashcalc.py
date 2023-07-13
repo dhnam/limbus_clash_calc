@@ -77,12 +77,15 @@ def win_probability(left: Skill, right: Skill) -> tuple[list[float], list[float]
 
 def total_avg_power(skill: Skill, prob: list[float]) -> float:
     res: float = 0
+    coin_power: list[float] = []
     for i, p in enumerate(prob):
+        if i == 0:
+            continue
         power = skill.base_coin + i * skill.coin_val * skill.head_prob
         if power < 0:
             power = 0
-        power_exp = p * power
-        res += power_exp * (skill.coin_count - i + 1)
+        coin_power.append(power)
+        res += p * sum(coin_power)
     return res
 
 def skill_column(number:int):
