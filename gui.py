@@ -32,7 +32,7 @@ sg.change_look_and_feel('SystemDefaultForReal')
 language: LanguageType = 'kr'
 
 layout = main_layout(language)
-window = sg.Window(title_trans['main'][language], layout, finalize=True)
+window = sg.Window(title_trans['main'][language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
                    
 window2 = None
 
@@ -59,8 +59,8 @@ while True:
         if event == "detail":
             if window2 is not None:
                 continue
-            window2 = sg.Window(title_trans['detail'][language], detail_layout(language), finalize=True)
-    if event.split("::")[-1] == "language":
+            window2 = sg.Window(title_trans['detail'][language], detail_layout(language), icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+    if event is not None and event.split("::")[-1] == "language":
         if language == 'kr':
             language = 'en'
         else:
@@ -68,7 +68,7 @@ while True:
         win_before = window
         loc = win_before.current_location()
         foc = win_before.find_element_with_focus().key
-        window = sg.Window(title_trans['main'][language], main_layout(language), location=loc, finalize=True)
+        window = sg.Window(title_trans['main'][language], main_layout(language), icon='images/logo.ico', titlebar_icon='images/logo.ico', location=loc, finalize=True)
         del values[0]
         window.fill(values)
         window["winrate1"].update(win_before["winrate1"].get())
