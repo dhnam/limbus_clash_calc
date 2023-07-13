@@ -103,13 +103,17 @@ def detail_column(number: int, res: list[float]):
 sg.change_look_and_feel('SystemDefaultForReal')
 layout = [[sg.Column(skill_column(1)), sg.Column(skill_column(2))],
           [sg.Button("계산", key="calc"), sg.Button("상세 정보", key="detail")]]
-window = sg.Window("림버스 합 승률 계산기", layout)
+window = sg.Window("림버스 합 승률 계산기", layout, finalize=True)
                    
-
-while True:                
-    event, values = window.read()
+window2 = None
+while True:
+    win, event, values = sg.read_all_windows()
     if event == sg.WIN_CLOSED or event == 'Exit':
-        break
+        win.close()
+        if win == window2:
+            window2 = None
+        else:
+            break
     if event == "calc" or event == "detail":
         try:
             skill_a = Skill(int(values['base1']), int(values['coin1']), int(values['count1']), int(values['sanity1']))
@@ -118,17 +122,17 @@ while True:
             sg.popup("숫자를 입력해주세요.")
             continue
         a_win, b_win = win_probability(skill_a, skill_b)
-        window["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
-        window["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
-        window["avgpower1"].update(f"{total_avg_power(skill_a, a_win):.3f}")
-        window["avgpower2"].update(f"{total_avg_power(skill_b, b_win):.3f}")
+        win["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
+        win["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
+        win["avgpower1"].update(f"{total_avg_power(skill_a, a_win):.3f}")
+        win["avgpower2"].update(f"{total_avg_power(skill_b, b_win):.3f}")
         if event == "detail":
-            new_window = sg.Window("상세정보", 
+            if window2 is not None:
+                continue
+            window2 = sg.Window("상세정보", 
                                    [
                                        [sg.Column([[sg.Column(detail_column(1, a_win)), sg.Column(detail_column(2, b_win))]], size=(None, 200), scrollable=True, vertical_scroll_only=True)],
-                                       [sg.Exit('확인')]
-                                   ])
-            new_window.read()
-            new_window.close()
+                                       [sg.Exit('확인', key="Exit")]
+                                   ], finalize=True)
 
 window.close()
