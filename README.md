@@ -6,7 +6,7 @@
 
 (코인 40개끼리 붙이는 정도면 노트북에서 2초정도 걸림)
 
-위력 기댓값은 마지막 공격의 위력입니다. 전체 피해량을 반영하지 않습니다.
+위력 기댓값은 공격 위력 총합의 기댓값입니다.
 
 ![메인화면](images/main_screen.png)
 
@@ -21,7 +21,7 @@ Calculate clash win rate relatively fast using matrix multiplication.
 
 (It takes about two seconds in laptop with clash between 40 coins.)
 
-'power expected value' is expected value of the last power of the attack. Does not reflect net. damage.
+'Expected Power' is sum of expected attack power.
 
 ![main screen](images/main_screen_en.png)
 
