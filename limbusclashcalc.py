@@ -75,8 +75,15 @@ def win_probability(left: Skill, right: Skill) -> tuple[list[float], list[float]
     res = get_result_matrix(left, right)
     return list(res.T[0]), list(res[0])
 
-def last_avg_power(skill: Skill, prob: list[float]) -> float:
-    return sum((skill.base_coin + i * skill.coin_val * skill.head_prob) * p for i, p in enumerate(prob)) 
+def total_avg_power(skill: Skill, prob: list[float]) -> float:
+    res: float = 0
+    for i, p in enumerate(prob):
+        power = skill.base_coin + i * skill.coin_val * skill.head_prob
+        if power < 0:
+            power = 0
+        power_exp = p * power
+        res += power_exp * (skill.coin_count - i + 1)
+    return res
 
 def skill_column(number:int):
  return [[sg.Text(f"캐릭터 {number}", size=10)],
@@ -113,8 +120,8 @@ while True:
         a_win, b_win = win_probability(skill_a, skill_b)
         window["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
         window["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
-        window["avgpower1"].update(f"{last_avg_power(skill_a, a_win):.3f}")
-        window["avgpower2"].update(f"{last_avg_power(skill_b, b_win):.3f}")
+        window["avgpower1"].update(f"{total_avg_power(skill_a, a_win):.3f}")
+        window["avgpower2"].update(f"{total_avg_power(skill_b, b_win):.3f}")
         if event == "detail":
             new_window = sg.Window("상세정보", 
                                    [
