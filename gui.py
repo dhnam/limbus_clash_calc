@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 from limbusclashcalc import *
 from translation import *
 
-
+# TODO Add Paralyze
 def skill_column(number:int, language:LanguageType):
     return [[sg.Text(skill_trans['character'][language] % (number), size=15)],
             [sg.Text(skill_trans['base'][language], size=15), sg.Input(key=f"base{number}", size=7)],
@@ -12,6 +12,7 @@ def skill_column(number:int, language:LanguageType):
             [sg.Text(skill_trans['winrate'][language], size=15), sg.Text("", key=f"winrate{number}", size=7)],
             [sg.Text(skill_trans['avgpower'][language], size=15), sg.Text("", key=f"avgpower{number}", size=7)]]
 
+# TODO fix this function to meet new signature of win_probability
 def detail_column(number: int, res: list[float], language:LanguageType):
     res_col = [[sg.Text(detail_trans['character'][language] % (number))]]
     res_col.extend([[sg.Text(detail_trans['coins'][language] % (i, next_prob * 100))] for i, next_prob in enumerate(res) if i != 0])
@@ -29,10 +30,10 @@ def detail_layout(language:LanguageType):
 
 sg.change_look_and_feel('SystemDefaultForReal')
 
-language: LanguageType = 'kr'
+curr_language: LanguageType = 'kr'
 
-layout = main_layout(language)
-window = sg.Window(title_trans['main'][language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+layout = main_layout(curr_language)
+window = sg.Window(title_trans['main'][curr_language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
                    
 window2 = None
 
@@ -49,8 +50,9 @@ while True:
             skill_a = Skill(int(values['base1']), int(values['coin1']), int(values['count1']), int(values['sanity1']))
             skill_b = Skill(int(values['base2']), int(values['coin2']), int(values['count2']), int(values['sanity2']))
         except ValueError as e:
-            sg.popup(error_trans[language])
+            sg.popup(error_trans[curr_language])
             continue
+        # TODO fix this to meet new signature of win_probability
         a_win, b_win = win_probability(skill_a, skill_b)
         win["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
         win["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
@@ -59,16 +61,16 @@ while True:
         if event == "detail":
             if window2 is not None:
                 continue
-            window2 = sg.Window(title_trans['detail'][language], detail_layout(language), icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+            window2 = sg.Window(title_trans['detail'][curr_language], detail_layout(curr_language), icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
     if event is not None and event.split("::")[-1] == "language":
-        if language == 'kr':
-            language = 'en'
+        if curr_language == 'kr':
+            curr_language = 'en'
         else:
-            language = 'kr'
+            curr_language = 'kr'
         win_before = window
         loc = win_before.current_location()
         foc = win_before.find_element_with_focus().key
-        window = sg.Window(title_trans['main'][language], main_layout(language), icon='images/logo.ico', titlebar_icon='images/logo.ico', location=loc, finalize=True)
+        window = sg.Window(title_trans['main'][curr_language], main_layout(curr_language), icon='images/logo.ico', titlebar_icon='images/logo.ico', location=loc, finalize=True)
         del values[0]
         window.fill(values)
         window["winrate1"].update(win_before["winrate1"].get())
