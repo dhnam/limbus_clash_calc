@@ -52,7 +52,14 @@ class ProbResult:
     probability: float
     coin_count: int
     paralyze: int
+    opp_paralyze: int
 
+    def __str__(self) -> str:
+        return f"<Coin {self.coin_count}: {self.probability}{' (paralyze ' + str(self.paralyze) + ')' if self.paralyze != 0 else ''}{' (opponenet paralyze ' + str(self.opp_paralyze) + ')' if self.opp_paralyze != 0 else ''})>"
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
 def single_clash_prob(left: Skill, right: Skill) -> tuple[float, float, float]:
     left_winrate: float = 0
     draw_rate: float = 0
@@ -126,6 +133,7 @@ def get_result_matrix(left: Skill, right: Skill) -> np.ndarray:
     left_paralyzes_count = len(base_left_paralyzes)
     base_right_paralyzes = right.possible_paralyzes
     right_paralyzes_count = len(base_right_paralyzes)
+    # print(power_until_steady(clash_matrix(left, right))[-1])
     return power_until_steady(clash_matrix(left, right))[-1].reshape(((left.coin_count + 1) * left_paralyzes_count, (right.coin_count + 1) * right_paralyzes_count))
 
 def repeat_elements(lst, n):
@@ -135,33 +143,47 @@ def win_probability(left: Skill, right: Skill) -> tuple[list[ProbResult], list[P
     res = get_result_matrix(left, right)
     base_left_paralyzes = left.possible_paralyzes
     base_right_paralyzes = right.possible_paralyzes
+    left_prob_list: list[ProbResult] = []
+    right_prob_list: list[ProbResult] = []
+    for i, next_left_win in enumerate(res.T[:len(base_right_paralyzes)]):
+        left_prob_list.extend([ProbResult(prob, coin, paralyze, base_right_paralyzes[i]) for prob, coin, paralyze in
+                              zip(next_left_win[len(base_left_paralyzes):],
+                              repeat_elements(range(1, left.coin_count + 1), len(base_left_paralyzes)),
+                              base_left_paralyzes * (left.coin_count + 1)) if prob != 0])
+        
+    for i, next_right_win in enumerate(res[:len(base_left_paralyzes)]):
+        right_prob_list.extend([ProbResult(prob, coin, paralyze, base_left_paralyzes[i]) for prob, coin, paralyze in
+                               zip(next_right_win[len(base_right_paralyzes):],
+                               repeat_elements(range(1, right.coin_count + 1), len(base_right_paralyzes)),
+                               base_right_paralyzes * (right.coin_count + 1)) if prob != 0])
 
-    return list(ProbResult(prob, coin, paralyze) for prob, coin, paralyze in
-                zip(res.T[0][len(base_left_paralyzes):],
-                    repeat_elements(range(1, left.coin_count + 1), len(base_left_paralyzes)),
-                    base_left_paralyzes * (left.coin_count + 1))),\
-           list(ProbResult(prob, coin, paralyze) for prob, coin, paralyze in
-                zip(res[0][len(base_right_paralyzes):],
-                    repeat_elements(range(1, right.coin_count + 1), len(base_right_paralyzes)),
-                    base_right_paralyzes * (right.coin_count + 1)))
+    return left_prob_list, right_prob_list
 
 # TODO fix this function to meet new signature of win_probability
-def total_avg_power(skill: Skill, prob: list[float]) -> float:
+def total_avg_power(skill: Skill, prob: list[ProbResult]) -> float:
     res: float = 0
     coin_power: list[float] = []
-    for i, p in enumerate(prob):
-        if i == 0:
-            continue
-        power = skill.base_coin + i * skill.coin_val * skill.head_prob
+    for next_prob in prob:
+        count = next_prob.coin_count
+        p = next_prob.probability
+        paralyze = next_prob.paralyze
+        power = skill.base_coin + max(count - paralyze, 0) * skill.coin_val * skill.head_prob
         power = max(0, power)
         coin_power.append(power)
         res += p * sum(coin_power)
     return res
 
 if __name__ == "__main__":
-    skill_a = Skill(30, -12, 4, 0, 3)
-    skill_b = Skill(20, -4, 3, 0)
+    skill_a = Skill(30, -12, 4, 0, 13)
+    skill_b = Skill(33, -4, 3, 0)
+    # skill_a = Skill(5, 3, 2, 0, 4)
+    # skill_b = Skill(2, 4, 2, 0, 0)
     # np.set_printoptions(threshold=40000, linewidth=1000, formatter={'float_kind':lambda x: '{0:0.1f}'.format(x)})
     # print(clash_matrix(skill_a, skill_b))
+    # test = np.zeros((2,2,1,2,2,2,1,2))
+    # for i, (a, b, c, d, e, f, g, h) in enumerate(product(range(2), range(2), range(1), range(2), range(2), range(2), range(1), range(2))):
+        # test[a,b,c,d,e,f,g,h] = 10000000*a + 1000000*b + 100000*c + 10000 *d + 1000 * e + 100 *f + 10 * g + h
+    # print(test.reshape(8,8)[-1].reshape(4,2))
     print(get_result_matrix(skill_a, skill_b))
     print(win_probability(skill_a, skill_b))
+    # print(total_avg_power(skill_a, win_probability(skill_a, skill_b)[0]))
