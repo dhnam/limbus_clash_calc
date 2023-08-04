@@ -159,7 +159,6 @@ def win_probability(left: Skill, right: Skill) -> tuple[list[ProbResult], list[P
 
     return left_prob_list, right_prob_list
 
-# TODO fix this function to meet new signature of win_probability
 def total_avg_power(skill: Skill, prob: list[ProbResult]) -> float:
     res: float = 0
     coin_power: list[float] = []
@@ -186,4 +185,4 @@ if __name__ == "__main__":
     # print(test.reshape(8,8)[-1].reshape(4,2))
     print(get_result_matrix(skill_a, skill_b))
     print(win_probability(skill_a, skill_b))
-    # print(total_avg_power(skill_a, win_probability(skill_a, skill_b)[0]))
+    print(total_avg_power(skill_a, win_probability(skill_a, skill_b)[0]))
