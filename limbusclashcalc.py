@@ -55,7 +55,7 @@ class ProbResult:
     opp_paralyze: int
 
     def __str__(self) -> str:
-        return f"<Coin {self.coin_count}: {self.probability}{' (paralyze ' + str(self.paralyze) + ')' if self.paralyze != 0 else ''}{' (opponenet paralyze ' + str(self.opp_paralyze) + ')' if self.opp_paralyze != 0 else ''})>"
+        return f"<Coin {self.coin_count}: {self.probability}{' (paralyze ' + str(self.paralyze) + ')' if self.paralyze != 0 else ''}{' (opponenet paralyze ' + str(self.opp_paralyze) + ')' if self.opp_paralyze != 0 else ''}>"
     
     def __repr__(self) -> str:
         return str(self)
