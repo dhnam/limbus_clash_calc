@@ -19,7 +19,8 @@ def detail_column(number: int, res: list[ProbResult], language:LanguageType):
     res_col = [[sg.Text(detail_trans['character'][language] % (number))]]
     res_col.extend([[sg.Text(detail_trans['coins'][language] % (i, next_prob * 100))]
                     for i, next_prob in enumerate(map(lambda x: x.probability, res)) if i != 0])
-    res_col.append([sg.Text(detail_trans['winrate'][language] % (sum(res) * 100))])
+    zero_res = ProbResult(0, 0, 0, 0)
+    res_col.append([sg.Text(detail_trans['winrate'][language] % (reduce(ProbResult.add_prob, res, zero_res).probability * 100))])
     return res_col
 
 def main_layout(language:LanguageType):
@@ -60,8 +61,8 @@ while True:
         # TODO fix this to meet new signature of win_probability
         a_win, b_win = win_probability(skill_a, skill_b)
         zero_res = ProbResult(0,0,0,0)
-        win["winrate1"].update(f"{reduce(ProbResult.add_prob, a_win, zero_res) * 100:.3f}%")
-        win["winrate2"].update(f"{reduce(ProbResult.add_prob, b_win, zero_res) * 100:.3f}%")
+        win["winrate1"].update(f"{reduce(ProbResult.add_prob, a_win, zero_res).probability * 100:.3f}%")
+        win["winrate2"].update(f"{reduce(ProbResult.add_prob, b_win, zero_res).probability * 100:.3f}%")
         win["avgpower1"].update(f"{total_avg_power(skill_a, a_win):.3f}")
         win["avgpower2"].update(f"{total_avg_power(skill_b, b_win):.3f}")
         if event == "detail":
