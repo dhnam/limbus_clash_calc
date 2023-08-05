@@ -19,6 +19,8 @@ skill_trans: Translation = {
 detail_trans: Translation = {
     'character': {'kr': '캐릭터 %d', 'en': 'Character %d'},
     'coins': {'kr': '남은 코인 %d개로 승리: %f%%', 'en': 'Win with %d coin(s) left: %f%%'},
+    'para_self': {'kr': '합 이후 마비 %d: %f%%', 'en': '%d paralyze(s) after clash: %f%%'},
+    'para_all': {'kr': '합 이후 마비 %d, 상대 마비 %d: %f%%', 'en': '%d paralyze(s), opponent %d paralyze(s) after clash: %f%%'},
     'winrate': {'kr': '총 승률: %f%%', 'en': 'Net. Winrate: %f%%'},
 }
 
