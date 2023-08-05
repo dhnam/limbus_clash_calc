@@ -11,6 +11,7 @@ skill_trans: Translation = {
     'count': {'kr': '코인 갯수', 'en': 'Coin count'},
     'coin': {'kr': '코인 위력', 'en': 'Coin power'},
     'sanity': {'kr': '정신력', 'en': 'Sanity'},
+    'paralyze': {'kr': '마비', 'en': 'Paralyze'},
     'winrate': {'kr': '승률:', 'en': 'Win rate:'},
     'avgpower': {'kr': '위력 기댓값:', 'en': 'Expected Power:'},
 }
@@ -34,7 +35,11 @@ main_ui_trans: Translation = {
 }
 
 detail_ui_trans: Translation = {
-    'exit': {'kr': '확인', 'en': 'OK'}
+    'para_info': {'kr': '마비 정보', 'en': 'Paralyze information'},
+    'para_none': {'kr': '숨기기', 'en': 'Hide'},
+    'para_self': {'kr': '자신의 정보만', 'en': 'Only self'},
+    'para_all': {'kr': '전부 보이기', 'en': 'Show all'},
+    'exit': {'kr': '확인', 'en': 'OK'},
 }
 
 error_trans: SentencePair = {

@@ -1,3 +1,4 @@
+from functools import reduce
 import PySimpleGUI as sg
 from limbusclashcalc import *
 from translation import *
@@ -9,13 +10,15 @@ def skill_column(number:int, language:LanguageType):
             [sg.Text(skill_trans['count'][language], size=15), sg.Input(key=f"count{number}", size=7)],
             [sg.Text(skill_trans['coin'][language], size=15), sg.Input(key=f"coin{number}", size=7)],
             [sg.Text(skill_trans['sanity'][language], size=15), sg.Input(key=f"sanity{number}", size=7)],
+            [sg.Text(skill_trans['paralyze'][language], size=15), sg.Input(key=f"paralyze{number}", size=7)],
             [sg.Text(skill_trans['winrate'][language], size=15), sg.Text("", key=f"winrate{number}", size=7)],
             [sg.Text(skill_trans['avgpower'][language], size=15), sg.Text("", key=f"avgpower{number}", size=7)]]
 
 # TODO fix this function to meet new signature of win_probability
-def detail_column(number: int, res: list[float], language:LanguageType):
+def detail_column(number: int, res: list[ProbResult], language:LanguageType):
     res_col = [[sg.Text(detail_trans['character'][language] % (number))]]
-    res_col.extend([[sg.Text(detail_trans['coins'][language] % (i, next_prob * 100))] for i, next_prob in enumerate(res) if i != 0])
+    res_col.extend([[sg.Text(detail_trans['coins'][language] % (i, next_prob * 100))]
+                    for i, next_prob in enumerate(map(lambda x: x.probability, res)) if i != 0])
     res_col.append([sg.Text(detail_trans['winrate'][language] % (sum(res) * 100))])
     return res_col
 
@@ -24,8 +27,10 @@ def main_layout(language:LanguageType):
             [sg.Column(skill_column(1, language)), sg.Column(skill_column(2, language))],
             [sg.Button(main_ui_trans['calc'][language], key="calc"), sg.Button(main_ui_trans['detail'][language], key="detail")]]
 
-def detail_layout(language:LanguageType):
+def detail_layout(a_win: list[ProbResult], b_win: list[ProbResult], language:LanguageType):
     return [[sg.Column([[sg.Column(detail_column(1, a_win, language)), sg.Column(detail_column(2, b_win, language))]], size=(None, 200), scrollable=True, vertical_scroll_only=True)],
+            [sg.Text(detail_ui_trans['para_info'][language])],
+            [sg.Radio(detail_ui_trans['para_none'][language], "para"), sg.Radio(detail_ui_trans['para_self'][language], "para"), sg.Radio(detail_ui_trans['para_all'][language], "para")],
             [sg.Exit(detail_ui_trans['exit'][language], key="Exit")]]
 
 sg.change_look_and_feel('SystemDefaultForReal')
@@ -54,14 +59,15 @@ while True:
             continue
         # TODO fix this to meet new signature of win_probability
         a_win, b_win = win_probability(skill_a, skill_b)
-        win["winrate1"].update(f"{sum(a_win) * 100:.3f}%")
-        win["winrate2"].update(f"{sum(b_win) * 100:.3f}%")
+        zero_res = ProbResult(0,0,0,0)
+        win["winrate1"].update(f"{reduce(ProbResult.add_prob, a_win, zero_res) * 100:.3f}%")
+        win["winrate2"].update(f"{reduce(ProbResult.add_prob, b_win, zero_res) * 100:.3f}%")
         win["avgpower1"].update(f"{total_avg_power(skill_a, a_win):.3f}")
         win["avgpower2"].update(f"{total_avg_power(skill_b, b_win):.3f}")
         if event == "detail":
             if window2 is not None:
                 continue
-            window2 = sg.Window(title_trans['detail'][curr_language], detail_layout(curr_language), icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+            window2 = sg.Window(title_trans['detail'][curr_language], detail_layout(a_win, b_win, curr_language), icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
     if event is not None and event.split("::")[-1] == "language":
         if curr_language == 'kr':
             curr_language = 'en'
