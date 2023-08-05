@@ -61,8 +61,8 @@ class ProbResult:
     def __repr__(self) -> str:
         return str(self)
 
-    def add_prob(self, other:ProbResult) -> float:
-        return self.probability + other.probability
+    def add_prob(self, other:ProbResult) -> ProbResult:
+        return ProbResult(self.probability + other.probability, 0, 0, 0)
     
 def single_clash_prob(left: Skill, right: Skill) -> tuple[float, float, float]:
     left_winrate: float = 0
