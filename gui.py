@@ -9,18 +9,16 @@ class detailParaCalc(Enum):
     PARA_SELF = 2
     PARA_ALL = 3
 
-# TODO Add Paralyze
 def skill_column(number:int, language:LanguageType):
     return [[sg.Text(skill_trans['character'][language] % (number), size=15)],
             [sg.Text(skill_trans['base'][language], size=15), sg.Input(key=f"base{number}", size=7)],
             [sg.Text(skill_trans['count'][language], size=15), sg.Input(key=f"count{number}", size=7)],
             [sg.Text(skill_trans['coin'][language], size=15), sg.Input(key=f"coin{number}", size=7)],
-            [sg.Text(skill_trans['sanity'][language], size=15), sg.Input(key=f"sanity{number}", size=7)],
-            [sg.Text(skill_trans['paralyze'][language], size=15), sg.Input(key=f"paralyze{number}", size=7)],
+            [sg.Text(skill_trans['sanity'][language], size=15), sg.Spin(list(range(-45, 46)), 0, key=f"sanity{number}", size=5)],
+            [sg.Text(skill_trans['paralyze'][language], size=15), sg.Input("0", key=f"paralyze{number}", size=7)],
             [sg.Text(skill_trans['winrate'][language], size=15), sg.Text("", key=f"winrate{number}", size=7)],
             [sg.Text(skill_trans['avgpower'][language], size=15), sg.Text("", key=f"avgpower{number}", size=7)]]
 
-# TODO fix this function to meet new signature of win_probability
 def detail_column(number: int, res: list[ProbResult], language:LanguageType, detail_type:detailParaCalc=detailParaCalc.PARA_NONE):
     res_col = [[sg.Text(detail_trans['character'][language] % (number))]]
     prob_summary: list[tuple[int, float]] = []
@@ -60,10 +58,8 @@ def detail_column(number: int, res: list[ProbResult], language:LanguageType, det
                 j += 1
             i += 1
 
-    
-    # res_col.extend([[sg.Text(detail_trans['coins'][language] % (i, next_prob * 100))]
-    #                for i, next_prob in enumerate(map(lambda x: x.probability, res)) if i != 0])
     zero_res = ProbResult(0, 0, 0, 0)
+    res_col.append([sg.VPush()])
     res_col.append([sg.Text(detail_trans['winrate'][language] % (reduce(ProbResult.add_prob, res, zero_res).probability * 100))])
     return res_col
 
@@ -72,8 +68,8 @@ def main_layout(language:LanguageType):
             [sg.Column(skill_column(1, language)), sg.Column(skill_column(2, language))],
             [sg.Button(main_ui_trans['calc'][language], key="calc"), sg.Button(main_ui_trans['detail'][language], key="detail")]]
 
-def detail_layout(a_win: list[ProbResult], b_win: list[ProbResult], language:LanguageType, detail_type:detailParaCalc=detailParaCalc.PARA_NONE):
-    return [[sg.Column([[sg.Column(detail_column(1, a_win, language, detail_type)), sg.Column(detail_column(2, b_win, language, detail_type))]], size=(None, 200), scrollable=True, vertical_scroll_only=True)],
+def detail_layout(a_prob: list[ProbResult], b_prob: list[ProbResult], language:LanguageType, detail_type:detailParaCalc=detailParaCalc.PARA_NONE):
+    return [[sg.Column([[sg.Column(detail_column(1, a_prob, language, detail_type), expand_y=True), sg.Column(detail_column(2, b_prob, language, detail_type), expand_y=True)]], size=(None, 200), scrollable=True, vertical_scroll_only=True)],
             [sg.Text(detail_ui_trans['para_info'][language])],
             [sg.Radio(detail_ui_trans['para_none'][language], "para", default=True, enable_events=True, key="para_none"),
              sg.Radio(detail_ui_trans['para_self'][language], "para", enable_events=True, key="para_self"),
@@ -85,9 +81,9 @@ sg.change_look_and_feel('SystemDefaultForReal')
 curr_language: LanguageType = 'kr'
 
 layout = main_layout(curr_language)
-window = sg.Window(title_trans['main'][curr_language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+window: sg.Window = sg.Window(title_trans['main'][curr_language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
                    
-window2 = None
+window2: sg.Window | None = None
 
 while True:
     win, event, values = sg.read_all_windows()
@@ -97,14 +93,13 @@ while True:
             window2 = None
         else:
             break
-    if event == "calc" or event == "detail":
+    if event in ('calc', 'detail'):
         try:
             skill_a = Skill(int(values['base1']), int(values['coin1']), int(values['count1']), int(values['sanity1']), int(values['paralyze1']))
             skill_b = Skill(int(values['base2']), int(values['coin2']), int(values['count2']), int(values['sanity2']), int(values['paralyze2']))
         except ValueError as e:
             sg.popup(error_trans[curr_language])
             continue
-        # TODO fix this to meet new signature of win_probability
         a_win, b_win = win_probability(skill_a, skill_b)
         zero_res = ProbResult(0,0,0,0)
         win["winrate1"].update(f"{reduce(ProbResult.add_prob, a_win, zero_res).probability * 100:.3f}%")
