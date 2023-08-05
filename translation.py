@@ -11,6 +11,7 @@ skill_trans: Translation = {
     'count': {'kr': '코인 갯수', 'en': 'Coin count'},
     'coin': {'kr': '코인 위력', 'en': 'Coin power'},
     'sanity': {'kr': '정신력', 'en': 'Sanity'},
+    'paralyze': {'kr': '마비', 'en': 'Paralyze'},
     'winrate': {'kr': '승률:', 'en': 'Win rate:'},
     'avgpower': {'kr': '위력 기댓값:', 'en': 'Expected Power:'},
 }
@@ -18,6 +19,8 @@ skill_trans: Translation = {
 detail_trans: Translation = {
     'character': {'kr': '캐릭터 %d', 'en': 'Character %d'},
     'coins': {'kr': '남은 코인 %d개로 승리: %f%%', 'en': 'Win with %d coin(s) left: %f%%'},
+    'para_self': {'kr': '합 이후 마비 %d: %f%%', 'en': '%d paralyze(s) after clash: %f%%'},
+    'para_all': {'kr': '합 이후 마비 %d, 상대 마비 %d: %f%%', 'en': '%d paralyze(s), opponent %d paralyze(s) after clash: %f%%'},
     'winrate': {'kr': '총 승률: %f%%', 'en': 'Net. Winrate: %f%%'},
 }
 
@@ -34,7 +37,11 @@ main_ui_trans: Translation = {
 }
 
 detail_ui_trans: Translation = {
-    'exit': {'kr': '확인', 'en': 'OK'}
+    'para_info': {'kr': '마비 정보', 'en': 'Paralyze information'},
+    'para_none': {'kr': '숨기기', 'en': 'Hide'},
+    'para_self': {'kr': '자신의 정보만', 'en': 'Only self'},
+    'para_all': {'kr': '전부 보이기', 'en': 'Show all'},
+    'exit': {'kr': '확인', 'en': 'OK'},
 }
 
 error_trans: SentencePair = {
