@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 import itertools
@@ -59,6 +60,9 @@ class ProbResult:
     
     def __repr__(self) -> str:
         return str(self)
+
+    def add_prob(self, other:ProbResult) -> float:
+        return self.probability + other.probability
     
 def single_clash_prob(left: Skill, right: Skill) -> tuple[float, float, float]:
     left_winrate: float = 0
