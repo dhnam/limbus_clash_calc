@@ -1,3 +1,5 @@
+# Author: LegenDUST
+
 from functools import reduce
 from enum import Enum
 import PySimpleGUI as sg
