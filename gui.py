@@ -12,14 +12,16 @@ class detailParaCalc(Enum):
     PARA_ALL = 3
 
 def skill_column(number:int, language:LanguageType):
-    return [[sg.Text(skill_trans['character'][language] % (number), size=15)],
-            [sg.Text(skill_trans['base'][language], size=15), sg.Input(key=f"base{number}", size=7)],
-            [sg.Text(skill_trans['count'][language], size=15), sg.Input(key=f"count{number}", size=7)],
-            [sg.Text(skill_trans['coin'][language], size=15), sg.Input(key=f"coin{number}", size=7)],
-            [sg.Text(skill_trans['sanity'][language], size=15), sg.Spin(list(range(-45, 46)), 0, key=f"sanity{number}", size=5)],
-            [sg.Text(skill_trans['paralyze'][language], size=15), sg.Input("0", key=f"paralyze{number}", size=7)],
-            [sg.Text(skill_trans['winrate'][language], size=15), sg.Text("", key=f"winrate{number}", size=7)],
-            [sg.Text(skill_trans['avgpower'][language], size=15), sg.Text("", key=f"avgpower{number}", size=7)]]
+    label_size = 13
+    return [[sg.Text(skill_trans['character'][language] % (number), size=label_size)],
+            [sg.Text(skill_trans['base'][language], size=label_size), sg.Input(key=f"base{number}", size=7)],
+            [sg.Text(skill_trans['count'][language], size=label_size), sg.Input(key=f"count{number}", size=7)],
+            [sg.Text(skill_trans['coin'][language], size=label_size), sg.Input(key=f"coin{number}", size=7)],
+            [sg.Text(skill_trans['atklvl'][language], size=label_size), sg.Input("1", key=f"atklvl{number}", size=7)],
+            [sg.Text(skill_trans['sanity'][language], size=label_size), sg.Spin(list(range(-45, 46)), 0, key=f"sanity{number}", size=5)],
+            [sg.Text(skill_trans['paralyze'][language], size=label_size), sg.Input("0", key=f"paralyze{number}", size=7)],
+            [sg.Text(skill_trans['winrate'][language], size=label_size), sg.Text("", key=f"winrate{number}", size=7)],
+            [sg.Text(skill_trans['avgpower'][language], size=label_size), sg.Text("", key=f"avgpower{number}", size=7)]]
 
 def detail_column(number: int, res: list[ProbResult], language:LanguageType, detail_type:detailParaCalc=detailParaCalc.PARA_NONE):
     res_col = [[sg.Text(detail_trans['character'][language] % (number))]]
@@ -97,8 +99,16 @@ while True:
             break
     if event in ('calc', 'detail'):
         try:
-            skill_a = Skill(int(values['base1']), int(values['coin1']), int(values['count1']), int(values['sanity1']), int(values['paralyze1']))
-            skill_b = Skill(int(values['base2']), int(values['coin2']), int(values['count2']), int(values['sanity2']), int(values['paralyze2']))
+            atk_lvl_a = int(values['atklvl1'])
+            atk_lvl_b = int(values['atklvl2'])
+            a_buff = 0
+            b_buff = 0
+            if atk_lvl_a > atk_lvl_b:
+                a_buff += (atk_lvl_a - atk_lvl_b) // 3
+            else:
+                b_buff += (atk_lvl_b - atk_lvl_a) // 3
+            skill_a = Skill(int(values['base1']) + a_buff, int(values['coin1']), int(values['count1']), int(values['sanity1']), int(values['paralyze1']))
+            skill_b = Skill(int(values['base2']) + b_buff, int(values['coin2']), int(values['count2']), int(values['sanity2']), int(values['paralyze2']))
         except ValueError as e:
             sg.popup(error_trans[curr_language])
             continue

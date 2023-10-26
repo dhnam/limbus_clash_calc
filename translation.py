@@ -10,6 +10,7 @@ skill_trans: Translation = {
     'base': {'kr': '스킬 위력', 'en': 'Skill power'},
     'count': {'kr': '코인 갯수', 'en': 'Coin count'},
     'coin': {'kr': '코인 위력', 'en': 'Coin power'},
+    'atklvl': {'kr': '공격 레벨', 'en': 'Attack Level'},
     'sanity': {'kr': '정신력', 'en': 'Sanity'},
     'paralyze': {'kr': '마비', 'en': 'Paralyze'},
     'winrate': {'kr': '승률:', 'en': 'Win rate:'},
