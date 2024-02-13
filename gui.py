@@ -3,6 +3,7 @@
 from functools import reduce
 from enum import Enum
 import PySimpleGUI as sg
+import sys, os
 from limbusclashcalc import *
 from translation import *
 
@@ -80,12 +81,20 @@ def detail_layout(a_prob: list[ProbResult], b_prob: list[ProbResult], language:L
              sg.Radio(detail_ui_trans['para_all'][language], "para", enable_events=True, key="para_all")],
             [sg.Exit(detail_ui_trans['exit'][language], key="Exit")]]
 
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
 sg.change_look_and_feel('SystemDefaultForReal')
 
 curr_language: LanguageType = 'kr'
 
 layout = main_layout(curr_language)
-window: sg.Window = sg.Window(title_trans['main'][curr_language], layout, icon='images/logo.ico', titlebar_icon='images/logo.ico', finalize=True)
+img_path = resource_path("./images")
+ico_path = os.path.join(img_path, "logo.ico")
+window: sg.Window = sg.Window(title_trans['main'][curr_language], layout, icon=ico_path, titlebar_icon=ico_path, finalize=True)
                    
 window2: sg.Window | None = None
 
