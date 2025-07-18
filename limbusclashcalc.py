@@ -7,8 +7,9 @@ import itertools
 from itertools import product
 from math import comb
 import numpy as np
+import timeit
 
-@dataclass(unsafe_hash=True)
+@dataclass(frozen=True)
 class Skill:
     base_coin: int
     coin_val: int
@@ -25,15 +26,16 @@ class Skill:
     @lru_cache(1)
     def prob_list(self) -> list[tuple[int, float]]:
         coin_flipped = max(0, self.coin_count - self.paralyze)
-        return sorted(
-            [
-                (max(0, self.base_coin + self.coin_val * i),
-                 self.head_prob ** i\
-                 * (1 - self.head_prob) ** (coin_flipped - i)\
-                 * comb(coin_flipped, i))
-                 for i in range(coin_flipped + 1)
-            ]
-            , key=lambda x: x[0])
+        orig_dict = {}
+        for i in range(coin_flipped + 1):
+            power = max(0, self.base_coin + self.coin_val * i)
+            if power not in orig_dict:
+                orig_dict[power] = 0
+            orig_dict[power] += self.head_prob ** i\
+                                * (1 - self.head_prob) ** (coin_flipped - i)\
+                                * comb(coin_flipped, i)
+        return [(k, orig_dict[k]) for k in sorted(orig_dict)]
+        
     
     @property
     @lru_cache(1)
@@ -49,8 +51,14 @@ class Skill:
             if possible_coins[-1] > 1:
                 possible_coins.append(possible_coins[-1] - 1)
         return list(res)
+
+    def after_win(self) -> Skill:
+        return Skill(self.base_coin, self.coin_val, self.coin_count, self.sanity, max(0, self.paralyze - self.coin_count))
     
-@dataclass(unsafe_hash=True)
+    def after_lose(self) -> Skill:
+        return Skill(self.base_coin, self.coin_val, self.coin_count - 1, self.sanity, max(0, self.paralyze - self.coin_count))
+    
+@dataclass(frozen=True)
 class ProbResult:
     probability: float
     coin_count: int
@@ -65,7 +73,7 @@ class ProbResult:
 
     def add_prob(self, other:ProbResult) -> ProbResult:
         return ProbResult(self.probability + other.probability, 0, 0, 0)
-    
+
 def single_clash_prob(left: Skill, right: Skill) -> tuple[float, float, float]:
     left_winrate: float = 0
     draw_rate: float = 0
@@ -83,6 +91,58 @@ def single_clash_prob(left: Skill, right: Skill) -> tuple[float, float, float]:
             if left_val > right_val:
                 left_winrate += left_prob * right_prob
     return left_winrate, draw_rate, right_winrate
+
+
+@lru_cache(maxsize=None)
+def win_probability(left: Skill, right:Skill) -> tuple[list[ProbResult], list[ProbResult]]:
+    if left.coin_count == 0:
+        return ([], [ProbResult(1.0, right.coin_count, right.paralyze, left.paralyze)])
+    if right.coin_count == 0:
+        return ([ProbResult(1.0, left.coin_count, left.paralyze, right.paralyze)], [])
+    
+    left_win, draw, right_win = single_clash_prob(left, right)
+    if left.paralyze == 0 and right.paralyze == 0:
+        tot = left_win + right_win
+        if tot == 0:
+            return ([], []) # Infinite clash
+        left_win = left_win / tot
+        right_win = right_win / tot
+        draw = 0
+    # case 1: left win
+    left_win_res = ([], [])
+    if left_win > 0:
+        left_win_res = win_probability(left.after_win(), right.after_lose())
+    # case 2: draw
+    draw_win_res = ([], [])
+    if draw != 0:
+        draw_win_res = win_probability(left.after_win(), right.after_win())
+    # case 3: right win
+    right_win_res = ([], [])
+    if right_win > 0:
+        right_win_res = win_probability(left.after_lose(), right.after_win())
+    # mix
+    left_dict = {}
+    right_dict = {}
+    for case_prob, win_res in zip([left_win, draw, right_win], [left_win_res, draw_win_res, right_win_res]):
+        for next_res in win_res[0]:
+            if (next_res.coin_count, next_res.paralyze, next_res.opp_paralyze) not in left_dict:
+                left_dict[(next_res.coin_count, next_res.paralyze, next_res.opp_paralyze)] = 0
+            left_dict[(next_res.coin_count, next_res.paralyze, next_res.opp_paralyze)] += case_prob * next_res.probability
+        for next_res in win_res[1]:
+            if (next_res.coin_count, next_res.paralyze, next_res.opp_paralyze) not in right_dict:
+                right_dict[(next_res.coin_count, next_res.paralyze, next_res.opp_paralyze)] = 0
+            right_dict[(next_res.coin_count, next_res.paralyze, next_res.opp_paralyze)] += case_prob * next_res.probability
+
+    res = ([], [])
+    for key in sorted(left_dict.keys()):
+        res[0].append(ProbResult(left_dict[key], key[0], key[1], key[2]))
+    for key in sorted(right_dict.keys()):
+        res[1].append(ProbResult(right_dict[key], key[0], key[1], key[2]))
+
+    return res
+            
+
+
 
 
 def clash_matrix(left: Skill, right: Skill) -> np.ndarray:
@@ -145,7 +205,7 @@ def get_result_matrix(left: Skill, right: Skill) -> np.ndarray:
 def repeat_elements(lst, n):
     return list(itertools.chain.from_iterable(itertools.repeat(x, n) for x in lst))
 
-def win_probability(left: Skill, right: Skill) -> tuple[list[ProbResult], list[ProbResult]]:
+def win_probability_legacy(left: Skill, right: Skill) -> tuple[list[ProbResult], list[ProbResult]]:
     res = get_result_matrix(left, right)
     base_left_paralyzes = left.possible_paralyzes
     base_right_paralyzes = right.possible_paralyzes
@@ -181,6 +241,8 @@ def total_avg_power(skill: Skill, prob: list[ProbResult]) -> float:
 if __name__ == "__main__":
     skill_a = Skill(30, -12, 4, 0, 13)
     skill_b = Skill(33, -4, 3, 0)
+    print(skill_a.prob_list)
+    print(skill_a.possible_paralyzes)
     # skill_a = Skill(5, 3, 2, 0, 4)
     # skill_b = Skill(2, 4, 2, 0, 0)
     # np.set_printoptions(threshold=40000, linewidth=1000, formatter={'float_kind':lambda x: '{0:0.1f}'.format(x)})
@@ -190,5 +252,7 @@ if __name__ == "__main__":
         # test[a,b,c,d,e,f,g,h] = 10000000*a + 1000000*b + 100000*c + 10000 *d + 1000 * e + 100 *f + 10 * g + h
     # print(test.reshape(8,8)[-1].reshape(4,2))
     print(get_result_matrix(skill_a, skill_b))
+    print(win_probability_legacy(skill_a, skill_b))
     print(win_probability(skill_a, skill_b))
+    print(f"old: {timeit.timeit("win_probability_legacy(skill_a, skill_b)", number=100, globals=globals())}, new: {timeit.timeit("win_probability.cache_clear(); win_probability(skill_a, skill_b)", number=100, globals=globals())}")
     print(total_avg_power(skill_a, win_probability(skill_a, skill_b)[0]))
