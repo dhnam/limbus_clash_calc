@@ -8,6 +8,7 @@ from itertools import product
 from math import comb
 import numpy as np
 import timeit
+import tracemalloc
 
 @dataclass(frozen=True)
 class Skill:
@@ -252,7 +253,18 @@ if __name__ == "__main__":
         # test[a,b,c,d,e,f,g,h] = 10000000*a + 1000000*b + 100000*c + 10000 *d + 1000 * e + 100 *f + 10 * g + h
     # print(test.reshape(8,8)[-1].reshape(4,2))
     print(get_result_matrix(skill_a, skill_b))
+    tracemalloc.start()
+    win_probability_legacy(skill_a, skill_b)
+    curr_leg, peak_leg = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
     print(win_probability_legacy(skill_a, skill_b))
+    print(f"{curr_leg=}, {peak_leg=}")
+
+    tracemalloc.start()
+    win_probability(skill_a, skill_b)
+    curr, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
     print(win_probability(skill_a, skill_b))
+    print(f"{curr=}, {peak=}")
     print(f"old: {timeit.timeit("win_probability_legacy(skill_a, skill_b)", number=100, globals=globals())}, new: {timeit.timeit("win_probability.cache_clear(); win_probability(skill_a, skill_b)", number=100, globals=globals())}")
     print(total_avg_power(skill_a, win_probability(skill_a, skill_b)[0]))
