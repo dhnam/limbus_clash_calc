@@ -4,7 +4,7 @@
 
 행렬곱을 이용해 비교적 빠르게 합 승률을 계산합니다.
 
-(코인 40개끼리 붙이는 정도면 노트북에서 2초정도 걸림)
+(코인 70개끼리 붙이는 정도면 노트북에서 2초정도 걸림)
 
 위력 기댓값은 공격 위력 총합의 기댓값입니다.
 
@@ -19,7 +19,7 @@
 
 Calculate clash win rate relatively fast using matrix multiplication.
 
-(It takes about two seconds in laptop with clash between 40 coins.)
+(It takes about two seconds in laptop with clash between 70 coins.)
 
 'Expected Power' is sum of expected attack power.
 
